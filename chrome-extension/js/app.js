@@ -31,7 +31,7 @@ app.v.init=function(state){
 
 app.v.listeners=function(){
   $("body").on("click","#add-another",function(){
-    $("#quotes").append(app.t.quote() );
+    $("#quotes").prepend(app.t.quote() );
   });
 
   $("body").on("click","#save",function(){
@@ -39,11 +39,11 @@ app.v.listeners=function(){
     var s = [];
     
     $("#quotes div").each(function(){
-      var original =  $(this).children()[0].value;
-      var quote = $(this).children()[1].value;
+      var source = _.escape( $(this).children()[1].value );
+      var quote = _.escape( $(this).children()[0].value );
 
-      if (original && quote){
-        s.push({original:original,quote:quote});
+      if (quote){
+        s.push({source:source,quote:quote});
       }
     });
     
@@ -55,32 +55,33 @@ app.v.listeners=function(){
 
 app.t.splash=function(state){
   var d="";
-  d+="<img src='icon.png' alt='counterspell icon' />";
+  d+="<img src='icon.png' alt='canon icon' />";
   d+="<div class='wrapper'>";
     d+=app.t.quotes(state.quotes );
-  d+="<input type='button' value='Save' id='save'></input>";
   d+="</div>";    
   return d;
 };
 
 app.t.quotes = function(quotes){
   var d = "";
+  d += "<input type='button' value='add another' id='add-another'></input>";
+  d+="<input type='button' value='Save' id='save'></input>";
   d += "<div class='thin-wrapper' id='quotes'>";
+  d += app.t.quote();
     for (var i=0;i<quotes.length;i++){
       d += app.t.quote(quotes[i]);
     }
   d += "</div>";
-  d += "<input type='button' value='add another' id='add-another'></input>";
   return d;
 };
 
 app.t.quote = function(quote){
-  if (quote === undefined){quote = {original:"",quote:""};}
+  if (quote === undefined){quote = {source:"",quote:""};}
 
   var d = "";
   d += "<div class='quote thin-wrapper'>";
-    d += "<input type='text' value='"+quote.original+"' placeholder='curse'></input>";
-    d += "<input type='text' value='"+quote.quote+"' placeholder='counterspell'></input>";
+    d += "<input type='text' value='"+quote.quote+"' placeholder='quote'></input>";
+    d += "<input type='text' value='"+quote.source+"' placeholder='source'></input>";
   d += "</div>";
   return d;
 };

@@ -8,7 +8,6 @@ var app={m:{},v:{},c:{},t:{}};
 /////////////////////////////
 
 
-
 app.c.init=function(){
   chrome.storage.sync.get(null,function(obj){
     if (!obj.quotes){
@@ -17,9 +16,40 @@ app.c.init=function(){
         console.log("initial quotes set");
       });
     }
+
   app.v.init(obj);
   app.v.listeners();
   });
+};
+
+app.c.setAlarm = function(){
+  chrome.alarms.onAlarm.addListener(function( alarm ) {
+    if (alarm.name === 'reminders'){
+      chrome.storage.sync.get("quotes",function(quotes){
+        console.log('got the quotes', quotes);
+        app.c.remind(quotes);
+      });
+    }
+
+      console.log("Got an alarm!", alarm);
+  });
+
+  chrome.alarms.create("reminders", {delayInMinutes:1}); 
+};
+
+app.c.remind = function(quotesObj){ 
+  console.log("remind fired");
+  console.log(quotesObj);
+  var quote = _.sample(quotesObj.quotes);
+  console.log(quote);
+  
+  chrome.notifications.create("reminder",{
+      type:"basic",
+      iconUrl:"icon.png",
+      title:quote.quote,
+      message:quote.source
+      }, function(nid){console.log(nid);});
+
 };
 
 //////////////////////////////
@@ -46,7 +76,6 @@ app.v.listeners=function(){
         s.push({source:source,quote:quote});
       }
     });
-    
     chrome.storage.sync.set({quotes:s},function(){console.log("saved!");});
   });
 };
@@ -57,6 +86,8 @@ app.t.splash=function(state){
   var d="";
   d+="<img src='icon.png' alt='canon icon' />";
   d+="<div class='wrapper'>";
+  d+="<input type='button' value='Save' id='save'></input>";
+  d += "<input type='button' value='add another' id='add-another'></input>";
     d+=app.t.quotes(state.quotes );
   d+="</div>";    
   return d;
@@ -64,10 +95,8 @@ app.t.splash=function(state){
 
 app.t.quotes = function(quotes){
   var d = "";
-  d += "<input type='button' value='add another' id='add-another'></input>";
-  d+="<input type='button' value='Save' id='save'></input>";
   d += "<div class='thin-wrapper' id='quotes'>";
-  d += app.t.quote();
+    d += app.t.quote();
     for (var i=0;i<quotes.length;i++){
       d += app.t.quote(quotes[i]);
     }
